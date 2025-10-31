@@ -3,7 +3,7 @@ import pandas as pd
 import logging
 
 class DataIngestion:
-    def __init__(self, data_path: str, log_dir: str = "logs"):
+    def __init__(self, data_path: str, save_path:str, log_dir: str = "logs"):
         # Ensure log directory exists
         os.makedirs(log_dir, exist_ok=True)
 
@@ -33,6 +33,7 @@ class DataIngestion:
 
         # Store paths
         self.data_path = data_path
+        self.save_path = save_path
         self.logger.info("DataIngestion initialized.")
 
     def load_data(self) -> pd.DataFrame:
@@ -40,8 +41,11 @@ class DataIngestion:
         try:
             self.logger.info(f"Attempting to load dataset from: {self.data_path}")
             df = pd.read_csv(self.data_path)
-            self.logger.info(f"Successfully loaded dataset with shape: {df.shape}")
-            return df
+            dir_name = os.path.dirname(self.save_path)
+            os.makedirs(dir_name, exist_ok=True)
+            df.to_csv(self.save_path, index=False)
+            self.logger.info(f"Successfully saved {os.path.basename(self.save_path)} to: {dir_name}")
+            # return df
 
         except FileNotFoundError:
             self.logger.error(f"File not found at: {self.data_path}")
@@ -53,25 +57,17 @@ class DataIngestion:
             self.logger.exception(f"Unexpected error while loading data: {str(e)}")
             raise
 
-    def preview_data(self, df: pd.DataFrame, n: int = 5):
+    def preview_data(self, n: int = 5):
         """Preview top records of the dataset."""
+        df = pd.read_csv(self.save_path)
         self.logger.debug(f"Previewing first {n} records:")
         self.logger.debug(f"\n{df.head(n).to_string(index=False)}")
 
-    def validate_columns(self, df: pd.DataFrame, expected_cols: list):
-        """Validate if required columns exist."""
-        self.logger.info("Validating dataset columns...")
-        missing = [col for col in expected_cols if col not in df.columns]
-        if missing:
-            self.logger.warning(f"Missing columns: {missing}")
-        else:
-            self.logger.info("All expected columns found.")
-        return missing == []
 
 if __name__ == "__main__":
     data_path = "./experiments/SPAS-Dataset-BD.csv"
-    ingestion = DataIngestion(data_path=data_path, log_dir='./LOGS')
-
-    df = ingestion.load_data()
-    ingestion.preview_data(df)
-    ingestion.validate_columns(df, expected_cols=["district", "crop", "season"])
+    save_path = "./data/raw/SPAS-Dataset-BD.csv"
+    
+    ingestion = DataIngestion(data_path=data_path, save_path=save_path, log_dir='./logs')
+    ingestion.load_data()
+    ingestion.preview_data(n=2)
