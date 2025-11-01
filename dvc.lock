@@ -77,8 +77,17 @@ stages:
       size: 403541
     - path: src/model_training.py
       hash: md5
-      md5: 18d168a9b5cb8f8a78edaf4c39c47fa8
-      size: 5234
+      md5: e0efb245cd3301e2697b3b274bbef390
+      size: 5448
+    params:
+      params.yaml:
+        model_training.random_forest:
+          n_estimators: 300
+          max_depth: 10
+          random_state: 42
+          min_samples_split: 2
+          min_samples_leaf: 5
+          n_jobs: -1
     outs:
     - path: models/random_forest_model.joblib
       hash: md5

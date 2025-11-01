@@ -37,6 +37,8 @@ stages:
     deps:
       - src/model_training.py
       - data/splits/train.csv
+    params:
+      - model_training.random_forest
     outs:
       - models/random_forest_model.joblib
 

@@ -3,6 +3,11 @@ import pandas as pd
 import logging
 from sklearn.ensemble import RandomForestClassifier
 import joblib
+import yaml
+
+
+
+
 
 class ModelTraining:
     """
@@ -45,7 +50,7 @@ class ModelTraining:
         self.params = params if params is not None else {}
         
         # Initialize the model (RandomForestClassifier based on your notebook)
-        self.model = RandomForestClassifier(**params, random_state=42, n_jobs=-1)
+        self.model = RandomForestClassifier(**params)
         
         self.logger.info("ModelTraining pipeline initialized.")
 
@@ -110,14 +115,23 @@ class ModelTraining:
         self.logger.info("Model training pipeline finished.")
 
 
+
+def load_params(param_path: str = "params.yaml") -> dict:
+    """Loads parameters from a YAML file."""
+    with open(param_path, 'r') as file:
+        params = yaml.safe_load(file)
+    return params
+
+
 if __name__ == "__main__":
     try:
         trainer = ModelTraining(
             train_path="./data/splits/train.csv",
             model_save_path="./models/random_forest_model.joblib",
             log_dir="./logs",
-            params = {'max_depth': 10, 'min_samples_leaf': 5, 'min_samples_split': 2, 'n_estimators': 300}
+            params=load_params(param_path='params.yaml').get('model_training', {}).get('random_forest', {})
         )
+        
         trainer.run()
         print("\nModel training complete and model saved.")
 
